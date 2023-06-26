@@ -20,7 +20,8 @@ pub struct GuiWindowData {
     has_sliders: bool,
     has_boxes: bool,
 
-    gui: Gui
+    gui: Gui,
+    window_id: WindowId,
 }
 
 impl Debug for GuiWindowData {
@@ -29,16 +30,6 @@ impl Debug for GuiWindowData {
             "Gui Window - {}: \n- Checkboxes: {:?} \n- Float sliders: {:?} \n- Int Sliders: {:?} \n- Float Boxes: {:?} \n- Int Boxes: {:?} \n- Uint Boxes: {:?} \n- String Boxes: {:?}",
             self.title, self.checkboxes, self.f32_sliders, self.i32_sliders, self.f32_boxes, self.i32_boxes, self.u32_boxes, self.string_boxes
         )
-        // f.debug_struct("Gui Window")
-        //     .field("title", &self.title)
-        //     .field("checkboxes", &self.checkboxes)
-        //     .field("float sliders", &self.f32_sliders)
-        //     .field("int sliders", &self.i32_sliders)
-        //     .field("float boxes", &self.f32_boxes)
-        //     .field("int boxes", &self.i32_boxes)
-        //     .field("uint boxes", &self.u32_boxes)
-        //     .field("string boxes", &self.string_boxes)
-        //     .finish()
     }
 }
 
@@ -118,23 +109,49 @@ pub fn create_gui_window(
         has_sliders,
         has_boxes,
 
-        gui
+        gui,
+        window_id,
     }
 }
 
-pub fn update_gui_window(
+pub fn attempt_update_gui_window(
     window: &mut GuiWindowData,
-    event: &WindowEvent
+    event: &WindowEvent,
+    event_window_id: WindowId,
 ) -> bool {
-    window.gui.update(event)
+    if event_window_id == window.window_id {
+        window.gui.update(event);
+        return true;
+    }
+    return false;
 }
 
-pub fn draw_gui_on_image(
+fn draw_gui_on_image(
     window: &mut GuiWindowData,
     before_future: Box<dyn GpuFuture>,
     renderer: &mut VulkanoWindowRenderer,
 ) -> Box<dyn GpuFuture>{
     window.gui.draw_on_image(before_future, renderer.swapchain_image_view())
+}
+
+
+pub fn attempt_gui_redraw(
+    gui: &mut GuiWindowData,
+    windows: &mut VulkanoWindows,
+    redraw_request_id: WindowId,
+) -> bool {
+    if redraw_request_id == gui.window_id {
+        let renderer = windows.get_renderer_mut(gui.window_id).unwrap();
+        draw_gui_window(gui);
+        // Acquire swapchain future
+        let before_future = renderer.acquire().unwrap();
+        // Render gui
+        let after_future = draw_gui_on_image(gui, before_future, renderer);
+        // Present swapchain
+        renderer.present(after_future, true);
+        return true;
+    }
+    false
 }
 
 

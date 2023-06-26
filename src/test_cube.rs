@@ -1,15 +1,15 @@
-use general_graphics::{ColouredVertex, PositionVertex, Normal};
+use super::{ColouredVertex, PositionVertex, Normal};
 
 
 pub const COLOURED_VERTICES: [ColouredVertex; 8] = [
-    ColouredVertex {position: [-0.5, -0.5, -0.5], color: [0.84, 0.01, 0.44]},
-    ColouredVertex {position: [0.5, -0.5, -0.5], color: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [-0.5, -0.5, 0.5], color: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [0.5, -0.5, 0.5], color: [0.0, 0.22, 0.66]},
-    ColouredVertex {position: [-0.5, 0.5, -0.5], color: [0.84, 0.01, 0.44]},
-    ColouredVertex {position: [0.5, 0.5, -0.5], color: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [-0.5, 0.5, 0.5], color: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [0.5, 0.5, 0.5], color: [0.0, 0.22, 0.66]}
+    ColouredVertex {position: [-0.5, -0.5, -0.5], colour: [0.84, 0.01, 0.44]},
+    ColouredVertex {position: [0.5, -0.5, -0.5], colour: [0.61, 0.31, 0.59]},
+    ColouredVertex {position: [-0.5, -0.5, 0.5], colour: [0.61, 0.31, 0.59]},
+    ColouredVertex {position: [0.5, -0.5, 0.5], colour: [0.0, 0.22, 0.66]},
+    ColouredVertex {position: [-0.5, 0.5, -0.5], colour: [0.84, 0.01, 0.44]},
+    ColouredVertex {position: [0.5, 0.5, -0.5], colour: [0.61, 0.31, 0.59]},
+    ColouredVertex {position: [-0.5, 0.5, 0.5], colour: [0.61, 0.31, 0.59]},
+    ColouredVertex {position: [0.5, 0.5, 0.5], colour: [0.0, 0.22, 0.66]}
 ];
 
 pub const UNCOLOURED_VERTICES: [PositionVertex; 8] = [
@@ -35,7 +35,7 @@ pub const NORMALS: [Normal; 8] = [
     Normal {normal: [1.0, 1.0, 1.0]},
 ];
 
-pub const INDICES: [u16; 36] = [
+pub const INDICES: [u32; 36] = [
     0, 4, 1,
     4, 1, 5,
     1, 5, 3,

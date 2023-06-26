@@ -8,7 +8,13 @@ use vulkano_util::{context::*, window::*};
 use super::Camera;
 use maths::{Vector3, Matrix4, Matrix3};
 use vulkano::{
-    pipeline::graphics::vertex_input::Vertex, command_buffer::allocator::StandardCommandBufferAllocator, descriptor_set::allocator::StandardDescriptorSetAllocator, swapchain::Swapchain, memory::allocator::StandardMemoryAllocator, buffer::{allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo}, BufferUsage}, format::Format,
+    pipeline::graphics::vertex_input::Vertex,
+    command_buffer::allocator::{StandardCommandBufferAllocator},
+    descriptor_set::allocator::{StandardDescriptorSetAllocator},
+    memory::allocator::StandardMemoryAllocator,
+    buffer::{allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo}, BufferUsage},
+    format::Format,
+    image::ImageUsage,
 };
 
 
@@ -21,8 +27,8 @@ use vulkano::{
 pub struct ColouredVertex {
     #[format(R32G32B32_SFLOAT)]
     pub position: [f32; 3],
-    #[format(R32G32_SFLOAT)]
-    pub color: [f32; 3],
+    #[format(R32G32B32_SFLOAT)]
+    pub colour: [f32; 3],
 }
 
 #[repr(C)]
@@ -61,7 +67,7 @@ impl From<Vector3> for Normal {
 
 pub fn get_general_graphics_data(
     window_data: Vec<(String, f32, f32, bool)>
-) ->(EventLoop<()>, VulkanoContext, VulkanoWindows, Vec<WindowId>) {
+) ->(EventLoop<()>, VulkanoContext, VulkanoWindows, Vec<WindowId>, Arc<StandardCommandBufferAllocator>, Arc<StandardDescriptorSetAllocator>) {
     let event_loop = EventLoop::new();
 
     let context = VulkanoContext::new(VulkanoConfig::default());
@@ -87,12 +93,12 @@ pub fn get_general_graphics_data(
                     resizable: datum.3,
                     ..Default::default()
                 },
-                |ci| {ci.image_format = Some(Format::B8G8R8A8_SRGB);},
+                |ci| {ci.image_format = Some(Format::B8G8R8A8_SRGB); ci.image_usage = ImageUsage::TRANSFER_DST | ci.image_usage},
             )
         )
     }
 
-    (event_loop, context, windows, window_ids)
+    (event_loop, context, windows, window_ids, command_allocator, descript_allocator)
 
 }
 
@@ -115,11 +121,11 @@ pub fn create_uniform_buffer_allocator(
 
 
 pub fn get_generic_uniforms(
-    swapchain: &Arc<Swapchain>,
+    swapchain_size: [u32; 2],
     camera: &Camera,
 ) -> (Matrix4, Matrix4){
     
-    let aspect_ratio = swapchain.image_extent()[0] as f32 / swapchain.image_extent()[1] as f32;
+    let aspect_ratio = swapchain_size[0] as f32 / swapchain_size[1] as f32;
 
     let proj = Matrix4::persective_matrix(
         std::f32::consts::FRAC_PI_2,

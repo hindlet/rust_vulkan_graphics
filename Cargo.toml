@@ -16,3 +16,7 @@ vulkano-win = "0.33"
 bytemuck = "1.13.1"
 egui = "0.21.0"
 egui_winit_vulkano = "0.24.0"
+
+
+[dev-dependencies]
+maths = {git = "https://github.com/hindlet/rust_maths.git", package = "rust_maths"}
