@@ -1,9 +1,8 @@
 use std::time::Instant;
 use rust_vulkan_graphics::*;
-use vulkano::{buffer::{Buffer, BufferCreateInfo, BufferUsage, allocator::SubbufferAllocator, Subbuffer}, memory::allocator::{AllocationCreateInfo, MemoryUsage}, pipeline::graphics::vertex_input::Vertex};
+use vulkano::{buffer::{allocator::SubbufferAllocator, Subbuffer}};
 use winit::{
-    event::{Event, WindowEvent},
-    event_loop::ControlFlow
+    event::{Event},
 };
 use maths::{Matrix3, Matrix4};
 
@@ -55,7 +54,7 @@ fn main() {
 
     let (event_loop, vulkano_context, mut vulkano_windows, window_ids, commands_allocator, descriptor_set_allocator) = get_general_graphics_data(vec![("Cube".to_string(), 750.0, 500.0, false), ("".to_string(), 300.0, 500.0, false)]);
     let uniform_allocator = create_uniform_buffer_allocator(vulkano_context.memory_allocator());
-    let mut gui = create_gui_window(
+    let mut gui = vec![create_gui_window(
         "Cube Spinning Settings".to_string(),
         vec![("Enable Spinning".to_string(), true)],
         vec![("Spin Speed".to_string(), 0.5, -5.0..=5.0)],
@@ -66,34 +65,10 @@ fn main() {
         Vec::new(),
 
         &mut vulkano_windows, window_ids[1], &event_loop
-    );
+    )];
 
-
-    let vertex_buffer = Buffer::from_iter(
-        vulkano_context.memory_allocator(),
-        BufferCreateInfo {
-            usage: BufferUsage::VERTEX_BUFFER,
-            ..Default::default()
-        },
-        AllocationCreateInfo {
-            usage: MemoryUsage::Upload,
-            ..Default::default()
-        },
-        test_cube::COLOURED_VERTICES,
-    ).unwrap();
-
-    let index_buffer = Buffer::from_iter(
-        vulkano_context.memory_allocator(),
-        BufferCreateInfo {
-            usage: BufferUsage::INDEX_BUFFER,
-            ..Default::default()
-        },
-        AllocationCreateInfo {
-            usage: MemoryUsage::Upload,
-            ..Default::default()
-        },
-        test_cube::INDICES,
-    ).unwrap();
+    let vertex_buffer = create_graphics_shader_data_buffer(test_cube::COLOURED_VERTICES, &vulkano_context, BufferType::Vertex);
+    let index_buffer = create_graphics_shader_data_buffer(test_cube::INDICES, &vulkano_context, BufferType::Index);
 
     let camera = Camera::new(Some([-2.0, 0.0, 0.0]), None, None, None);
 
@@ -111,35 +86,18 @@ fn main() {
         &descriptor_set_allocator,
         &vs,
         &fs,
-        ColouredVertex::per_vertex(),
+        vertex_defs::coloured()
     );
 
     event_loop.run(move |event, _, control_flow| {
         match event {
-            Event::WindowEvent { event, window_id } => {
-                // Update Egui integration so the UI works!
-                attempt_update_gui_window(&mut gui, &event, window_id);
-                let renderer = vulkano_windows.get_renderer_mut(window_id).unwrap();
-                match event {
-                    WindowEvent::Resized(_) => {
-                        renderer.resize();
-                    }
-                    WindowEvent::ScaleFactorChanged { .. } => {
-                        renderer.resize();
-                    }
-                    WindowEvent::CloseRequested => {
-                        *control_flow = ControlFlow::Exit;
-                    }
-                    _ => (),
-                }
-            }
             Event::RedrawRequested(window_id) => {
-                attempt_gui_redraw(&mut gui, &mut vulkano_windows, window_id);
+                attempt_gui_redraw(&mut gui[0], &mut vulkano_windows, window_id);
 
                 if window_id == cube_window_id {
                     let renderer = vulkano_windows.get_renderer_mut(cube_window_id).unwrap();
-                    if gui.checkboxes[0].1 {
-                        cube_rotation += last_frame_time.elapsed().as_secs_f32() * gui.f32_sliders[0].1;
+                    if gui[0].checkboxes[0].1 {
+                        cube_rotation += last_frame_time.elapsed().as_secs_f32() * gui[0].f32_sliders[0].1;
                     }
                     let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), &uniform_allocator, &camera);
                     let before_future = renderer.acquire().unwrap();
@@ -148,13 +106,8 @@ fn main() {
 
                     last_frame_time = Instant::now();
                 }
-            }
-            Event::MainEventsCleared => {
-                for (_, renderer) in vulkano_windows.iter_mut() {
-                    renderer.window().request_redraw();
-                }
-            }
-            _ => (),
+            } 
+            _ => generic_winit_event_handling(event, &mut vulkano_windows, &mut gui, control_flow),
         }
     });
     
