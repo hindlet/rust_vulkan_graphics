@@ -1,7 +1,6 @@
-use std::{sync::Arc, time::Instant};
+use std::time::Instant;
 use rust_vulkan_graphics::*;
-use vulkano::{buffer::{Buffer, BufferCreateInfo, BufferUsage, allocator::SubbufferAllocator, Subbuffer}, memory::allocator::{AllocationCreateInfo, MemoryUsage}, command_buffer::{CommandBufferUsage, AutoCommandBufferBuilder, allocator::StandardCommandBufferAllocator, RenderPassBeginInfo, SubpassContents, PrimaryAutoCommandBuffer}, pipeline::{GraphicsPipeline, Pipeline, PipelineBindPoint, graphics::{vertex_input::{Vertex, VertexDefinition, VertexBufferDescription}, input_assembly::InputAssemblyState, viewport::{ViewportState, Viewport}, depth_stencil::DepthStencilState}}, descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet, allocator::StandardDescriptorSetAllocator}, render_pass::{RenderPass, Framebuffer, FramebufferCreateInfo, Subpass}, format::Format, sync::GpuFuture, image::{view::ImageView, AttachmentImage}};
-use vulkano_util::{context::{VulkanoContext}, renderer::VulkanoWindowRenderer};
+use vulkano::{buffer::{Buffer, BufferCreateInfo, BufferUsage, allocator::SubbufferAllocator, Subbuffer}, memory::allocator::{AllocationCreateInfo, MemoryUsage}, pipeline::graphics::vertex_input::Vertex};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::ControlFlow
@@ -59,7 +58,7 @@ fn main() {
     let mut gui = create_gui_window(
         "Cube Spinning Settings".to_string(),
         vec![("Enable Spinning".to_string(), true)],
-        vec![("Spin Speed".to_string(), 0.5, -1.0..=1.0)],
+        vec![("Spin Speed".to_string(), 0.5, -5.0..=5.0)],
         Vec::new(),
         Vec::new(),
         Vec::new(),
@@ -139,7 +138,9 @@ fn main() {
 
                 if window_id == cube_window_id {
                     let renderer = vulkano_windows.get_renderer_mut(cube_window_id).unwrap();
-                    cube_rotation += last_frame_time.elapsed().as_secs_f32() * gui.f32_sliders[0].1;
+                    if gui.checkboxes[0].1 {
+                        cube_rotation += last_frame_time.elapsed().as_secs_f32() * gui.f32_sliders[0].1;
+                    }
                     let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), &uniform_allocator, &camera);
                     let before_future = renderer.acquire().unwrap();
                     let after_future = cube_render_pipeline.draw_from_vertices(before_future, renderer.swapchain_image_view(), &vertex_buffer, &index_buffer, &uniforms);
