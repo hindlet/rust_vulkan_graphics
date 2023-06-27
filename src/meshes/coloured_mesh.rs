@@ -1,36 +1,32 @@
 //! generic code for meshes in 3D space
 #![allow(dead_code)]
 use itertools::Itertools;
-use super::{
-    general_graphics::{PositionVertex, Normal},
-};
+use vulkano::buffer::Subbuffer;
+use vulkano_util::context::VulkanoContext;
+use super::*;
 use maths::Vector3;
+
+
 
 
 /// Data for a mesh in 3D space
 #[derive(Debug, Clone)]
-pub struct Mesh {
+pub struct ColouredMesh {
     pub vertices: Vec<PositionVertex>,
     pub normals: Vec<Normal>,
     pub indices: Vec<u32>,
+    pub colour: [f32; 4],
 }
 
 
-impl Mesh {
-    pub fn empty() -> Self {
-        Mesh {
-            vertices: Vec::new(),
-            normals: Vec::new(),
-            indices: Vec::new()
-        }
-    }
-
+impl ColouredMesh {
     pub fn new(
         vertices: Vec<PositionVertex>,
         indices: Vec<u32>,
+        colour: [f32; 4]
     ) -> Self {
-        Mesh {
-            vertices, normals: Vec::new(), indices
+        Self {
+            vertices, normals: Vec::new(), indices, colour
         }
     }
 
@@ -38,13 +34,13 @@ impl Mesh {
     pub fn set_normals(
         &mut self,
         normals: Vec<Normal>,
-    ) -> &mut Mesh{
+    ) -> &mut ColouredMesh{
         self.normals = normals;
         self
     }
 
     // recalculates the normals of the given mesh, smooth shaded
-    pub fn recalculate_normals(&mut self) -> &mut Mesh{
+    pub fn recalculate_normals(&mut self) -> &mut ColouredMesh{
         // init normals
         let mut normals: Vec<Vector3> = Vec::new();
         for _i in 0..self.vertices.len() {
@@ -83,14 +79,8 @@ impl Mesh {
         self
     }
 
-    pub fn set(&mut self, new: Mesh) {
-        self.vertices = new.vertices;
-        self.normals = new.normals;
-        self.indices = new.indices;
-    }
-
     /// returns a flat shaded version of the mesh called on
-    pub fn flat_shaded(&self) -> Mesh {
+    pub fn flat_shaded(&self) -> ColouredMesh {
         let mut new_verts: Vec<PositionVertex> = Vec::new();
         let mut new_normals: Vec<Normal> = Vec::new();
     
@@ -110,7 +100,7 @@ impl Mesh {
         }
     
         let indices = (0..(new_verts.len()) as u32).collect_vec();
-        Mesh::new(new_verts, indices).set_normals(new_normals).clone()
+        ColouredMesh::new(new_verts, indices, self.colour).set_normals(new_normals).clone()
     }
 
     /// sets the current mesh to be flat shaded
@@ -118,7 +108,9 @@ impl Mesh {
     /// NOT CURRENTLY REVERSIBLE
     pub fn flat_shade(&mut self) {
         let new = self.flat_shaded();
-        self.set(new);
+        self.vertices = new.vertices;
+        self.normals = new.normals;
+        self.indices = new.indices;
     }
 
     /// flat shades the components of a Mesh without ever needing a Mesh
@@ -151,25 +143,12 @@ impl Mesh {
     pub fn components(&self) -> (Vec<PositionVertex>, Vec<Normal>, Vec<u32>){
         (self.vertices.clone(), self.normals.clone(), self.indices.clone())
     }
-}
 
-impl Into<(Vec<PositionVertex>, Vec<Normal>, Vec<u32>)> for Mesh{
-    fn into(self) -> (Vec<PositionVertex>, Vec<Normal>, Vec<u32>) {
-        (self.vertices, self.normals, self.indices)
-    }
-}
-
-impl From<(Vec<Vector3>, Vec<u32>)> for Mesh {
-    fn from(value: (Vec<Vector3>, Vec<u32>)) -> Self {
-        let vertices = {
-            let mut verts: Vec<PositionVertex> = Vec::new();
-            for pos in value.0{
-                verts.push(pos.into())
-            }
-            verts
-        };
-        let mut mesh = Mesh::new(vertices, value.1);
-        mesh.recalculate_normals();
-        mesh
+    pub fn get_buffers(&self, context: VulkanoContext) -> (Subbuffer<[PositionVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
+        (
+            create_graphics_shader_data_buffer(self.vertices.clone(), &context, BufferType::Vertex),
+            create_graphics_shader_data_buffer(self.normals.clone(), &context, BufferType::Normal),
+            create_graphics_shader_data_buffer(self.indices.clone(), &context, BufferType::Index),
+        )
     }
 }
