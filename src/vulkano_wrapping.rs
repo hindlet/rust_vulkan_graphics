@@ -1,8 +1,8 @@
 use vulkano::{buffer::{BufferContents, Subbuffer, Buffer, BufferCreateInfo, BufferUsage}, memory::allocator::{AllocationCreateInfo, MemoryUsage}};
 use vulkano_util::{context::VulkanoContext, window::VulkanoWindows};
-use winit::{event::{Event, WindowEvent}, event_loop::ControlFlow};
+use winit::{event::{Event, WindowEvent, ElementState}, event_loop::ControlFlow};
 
-use crate::{attempt_update_gui_window, GuiWindowData};
+use crate::{attempt_update_gui_window, GuiWindowData, Camera};
 
 pub enum BufferType {
     Vertex,
@@ -44,7 +44,8 @@ pub fn generic_winit_event_handling(
     event: Event<'_, ()>,
     windows: &mut VulkanoWindows,
     gui: &mut Vec<GuiWindowData>,
-    control_flow: &mut ControlFlow
+    control_flow: &mut ControlFlow,
+    camera: &mut Camera,
 ) {
     match event {
         Event::WindowEvent { event, window_id } => {
@@ -62,6 +63,16 @@ pub fn generic_winit_event_handling(
                 }
                 WindowEvent::CloseRequested => {
                     *control_flow = ControlFlow::Exit;
+                }
+                WindowEvent::KeyboardInput {
+                    input: winit::event::KeyboardInput {
+                        virtual_keycode: Some(keycode),
+                        state,
+                        ..
+                    },
+                    ..
+                } => {
+                    camera.process_key(keycode, state == ElementState::Pressed);
                 }
                 _ => (),
             }

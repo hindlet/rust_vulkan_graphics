@@ -1,8 +1,8 @@
-use std::time::Instant;
+use std::{time::Instant};
 use rust_vulkan_graphics::*;
 use vulkano::{buffer::{allocator::SubbufferAllocator, Subbuffer}};
 use winit::{
-    event::{Event},
+    event::{Event, WindowEvent, ElementState}, event_loop::ControlFlow,
 };
 use maths::{Matrix3, Matrix4};
 
@@ -70,7 +70,8 @@ fn main() {
     let vertex_buffer = create_graphics_shader_data_buffer(test_cube::COLOURED_VERTICES, &vulkano_context, BufferType::Vertex);
     let index_buffer = create_graphics_shader_data_buffer(test_cube::INDICES, &vulkano_context, BufferType::Index);
 
-    let camera = Camera::new(Some([-2.0, 0.0, 0.0]), None, None, None);
+    let mut camera = Camera::new(Some([-2.0, 0.0, 0.0]), None, Some(10.0), None);
+    camera.controllable();
 
     let mut last_frame_time = Instant::now();
     let mut cube_rotation = 0.0;
@@ -89,15 +90,54 @@ fn main() {
         vertex_defs::coloured()
     );
 
+
     event_loop.run(move |event, _, control_flow| {
         match event {
+            Event::WindowEvent { event, window_id } => {
+                // Update Egui integration so the UI works!
+                for window in gui.iter_mut() {
+                    attempt_update_gui_window(window, &event, window_id);
+                }
+                let renderer = vulkano_windows.get_renderer_mut(window_id).unwrap();
+                match event {
+                    WindowEvent::Resized(_) => {
+                        renderer.resize();
+                    }
+                    WindowEvent::ScaleFactorChanged { .. } => {
+                        renderer.resize();
+                    }
+                    WindowEvent::CloseRequested => {
+                        *control_flow = ControlFlow::Exit;
+                    }
+                    WindowEvent::KeyboardInput {
+                        input: winit::event::KeyboardInput {
+                            virtual_keycode: Some(keycode),
+                            state,
+                            ..
+                        },
+                        ..
+                    } => {
+                        if window_id == cube_window_id {
+                            camera.process_key(keycode, state == ElementState::Pressed);
+                        }
+                    }
+                    _ => (),
+                }
+            },
+            Event::MainEventsCleared => {
+                for (_, renderer) in vulkano_windows.iter_mut() {
+                    renderer.window().request_redraw();
+                }
+            },
             Event::RedrawRequested(window_id) => {
+                let frame_time = last_frame_time.elapsed().as_secs_f32();
+                last_frame_time = Instant::now();
                 attempt_gui_redraw(&mut gui[0], &mut vulkano_windows, window_id);
 
                 if window_id == cube_window_id {
                     let renderer = vulkano_windows.get_renderer_mut(cube_window_id).unwrap();
                     if gui[0].checkboxes[0].1 {
-                        cube_rotation += last_frame_time.elapsed().as_secs_f32() * gui[0].f32_sliders[0].1;
+                        cube_rotation += frame_time * gui[0].f32_sliders[0].1;
                     }
                     let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), &uniform_allocator, &camera);
                     let before_future = renderer.acquire().unwrap();
@@ -106,8 +146,9 @@ fn main() {
 
                     last_frame_time = Instant::now();
                 }
-            } 
-            _ => generic_winit_event_handling(event, &mut vulkano_windows, &mut gui, control_flow),
+                camera.do_move(frame_time);
+            }
+            _ => (),
         }
     });
     

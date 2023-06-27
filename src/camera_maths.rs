@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-use std::time::Duration;
 use winit::event::VirtualKeyCode;
 use maths::{Vector3, Matrix3, Matrix4};
 
@@ -11,6 +10,7 @@ pub struct Camera {
     pub move_speed: f32,
     pub rotate_speed: f32,
     pub movement: [bool; 10], // forward, back, left, right, up, down, spin right, spin left, spin forward, spin backward
+    is_controlled: bool,
 }
 
 impl Camera {
@@ -39,7 +39,16 @@ impl Camera {
             rotate_speed: rotate_speed.unwrap_or(1.0),
             movement: [false; 10],
             up: -Vector3::Y(),
+            is_controlled: false,
         }
+    }
+
+    pub fn controllable(&mut self) {
+        self.is_controlled = true;
+    }
+
+    pub fn toggle_controlled(&mut self) {
+        self.is_controlled ^= true;
     }
 
     pub fn get_view_matrix(&self) -> Matrix4 {
@@ -99,8 +108,8 @@ impl Camera {
         }
     }
 
-    pub fn do_move(&mut self, time: Duration) {
-        let time = time.as_secs_f32();
+    pub fn do_move(&mut self, time: f32) {
+        if !self.is_controlled {return;}
 
         // take cross of direction and up to get left
         let mut left = self.direction.cross(self.up);
