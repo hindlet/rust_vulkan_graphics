@@ -1,9 +1,5 @@
 use std::{time::Instant};
 use rust_vulkan_graphics::*;
-use vulkano::{buffer::{allocator::SubbufferAllocator, Subbuffer}};
-use winit::{
-    event::{Event, WindowEvent, ElementState}, event_loop::ControlFlow,
-};
 use maths::{Matrix3, Matrix4};
 
 mod vs {

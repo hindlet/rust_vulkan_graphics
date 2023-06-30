@@ -12,8 +12,9 @@ pub use general_graphics::*;
 pub use pipeline::*;
 pub use vulkano_shaders::shader;
 pub use vulkano_wrapping::*;
-pub use vulkano::buffer::allocator::*;
+pub use vulkano::buffer::{allocator::*, Subbuffer};
 pub use meshes::*;
+pub use winit::{event::{Event, WindowEvent, ElementState}, event_loop::ControlFlow};
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};

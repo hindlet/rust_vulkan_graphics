@@ -1,8 +1,4 @@
 use rust_vulkan_graphics::*;
-use winit::{
-    event::{Event, WindowEvent},
-    event_loop::ControlFlow,
-};
 // use std::time::Instant;
 
 fn main() {
