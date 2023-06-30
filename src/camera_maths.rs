@@ -20,7 +20,7 @@ impl Camera {
             if start_pos.is_some() {
                 start_pos.unwrap().into()
             } else {
-                Vector3::ZERO()
+                Vector3::ZERO
             }
         };
 
@@ -28,7 +28,7 @@ impl Camera {
             if start_dir.is_some() && start_dir.unwrap() != [0.0; 3] {
                 start_dir.unwrap().into()
             } else {
-                Vector3::X()
+                Vector3::X
             }
         };
 
@@ -38,7 +38,7 @@ impl Camera {
             move_speed: move_speed.unwrap_or(3.0),
             rotate_speed: rotate_speed.unwrap_or(1.0),
             movement: [false; 10],
-            up: -Vector3::Y(),
+            up: -Vector3::Y,
             is_controlled: false,
         }
     }
