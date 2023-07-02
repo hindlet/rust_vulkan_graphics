@@ -83,7 +83,7 @@ fn main() {
         &descriptor_set_allocator,
         &vs,
         &fs,
-        vertex_defs::coloured()
+        &vertex_defs::coloured()
     );
 
 

@@ -37,7 +37,7 @@ impl MultiSamplePipeline3D {
         descriptor_set_allocator: &Arc<StandardDescriptorSetAllocator>,
         vertex_shader: &Arc<ShaderModule>,
         fragment_shader: &Arc<ShaderModule>,
-        vertex_def: VertexBufferDescription,
+        vertex_def: &[VertexBufferDescription],
     ) -> Self {
 
         let render_pass = Self::create_render_pass(context);
@@ -99,7 +99,7 @@ impl MultiSamplePipeline3D {
     fn create_pipeline(
         vertex_shader: &Arc<ShaderModule>,
         fragment_shader: &Arc<ShaderModule>,
-        vertex_def: VertexBufferDescription,
+        vertex_def: &[VertexBufferDescription],
         render_pass: &Arc<RenderPass>,
         context: &VulkanoContext,
     ) -> Arc<GraphicsPipeline> {

@@ -68,11 +68,11 @@ pub mod vertex_defs {
     use vulkano::pipeline::graphics::vertex_input::{Vertex, VertexBufferDescription};
     use super::{PositionVertex, ColouredVertex, Normal};
 
-    pub fn position() -> VertexBufferDescription{
-        PositionVertex::per_vertex()
+    pub fn position() -> [VertexBufferDescription; 1]{
+        [PositionVertex::per_vertex()]
     }
-    pub fn coloured() -> VertexBufferDescription{
-        ColouredVertex::per_vertex()
+    pub fn coloured() -> [VertexBufferDescription; 1]{
+        [ColouredVertex::per_vertex()]
     }
 
     pub fn position_normal() -> [VertexBufferDescription; 2]{
