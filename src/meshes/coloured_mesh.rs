@@ -28,6 +28,11 @@ impl ColouredMesh {
         }
     }
 
+    pub const EMPTY: ColouredMesh = ColouredMesh {
+        mesh: Mesh::EMPTY,
+        colour: [1.0, 1.0, 1.0, 1.0]
+    };
+
     // sets the normals of the given mesh and returns a reference
     pub fn set_normals(
         &mut self,

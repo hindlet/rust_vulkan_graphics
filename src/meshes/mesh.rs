@@ -28,6 +28,12 @@ impl Mesh {
         }
     }
 
+    pub const EMPTY: Mesh = Mesh {
+        vertices: Vec::new(),
+        normals: Vec::new(),
+        indices: Vec::new()
+    };
+
     // sets the normals of the given mesh and returns a reference
     pub fn set_normals(
         &mut self,
