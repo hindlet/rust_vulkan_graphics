@@ -16,7 +16,7 @@ pub struct Camera {
 impl Camera {
 
     pub fn new(start_pos: Option<[f32; 3]>, start_dir: Option<[f32; 3]>, move_speed: Option<f32>, rotate_speed: Option<f32>) -> Self{
-        let position = {
+        let position: Vector3 = {
             if start_pos.is_some() {
                 start_pos.unwrap().into()
             } else {
@@ -24,7 +24,7 @@ impl Camera {
             }
         };
 
-        let direction = {
+        let direction: Vector3 = {
             if start_dir.is_some() && start_dir.unwrap() != [0.0; 3] {
                 start_dir.unwrap().into()
             } else {
