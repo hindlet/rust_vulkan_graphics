@@ -48,7 +48,7 @@ mod fs {
 
 fn main() {
 
-    let (event_loop, vulkano_context, mut vulkano_windows, window_ids, commands_allocator, descriptor_set_allocator) = get_general_graphics_data(vec![("Cube".to_string(), 750.0, 500.0, false), ("".to_string(), 300.0, 500.0, false)]);
+    let (mut event_loop, vulkano_context, mut vulkano_windows, window_ids, commands_allocator, descriptor_set_allocator) = get_general_graphics_data(vec![("Cube".to_string(), 750.0, 500.0, false), ("".to_string(), 300.0, 500.0, false)]);
     let uniform_allocator = create_uniform_buffer_allocator(vulkano_context.memory_allocator());
     let mut gui = vec![create_gui_window(
         "Cube Spinning Settings".to_string(),
@@ -73,6 +73,7 @@ fn main() {
     let mut cube_rotation = 0.0;
 
     let cube_window_id = window_ids[0];
+    let gui_window_id = window_ids[1];
 
     let vs = vs::load(vulkano_context.device().clone()).unwrap();
     let fs = fs::load(vulkano_context.device().clone()).unwrap();
@@ -86,68 +87,42 @@ fn main() {
         &vertex_defs::coloured()
     );
 
+    loop {
+        if !generic_winit_event_handling_with_camera(&mut event_loop, &mut vulkano_windows, &mut gui, (&mut camera, &cube_window_id)) {break;}
 
-    event_loop.run(move |event, _, control_flow| {
-        match event {
-            Event::WindowEvent { event, window_id } => {
-                // Update Egui integration so the UI works!
-                for window in gui.iter_mut() {
-                    attempt_update_gui_window(window, &event, window_id);
-                }
-                let renderer = vulkano_windows.get_renderer_mut(window_id).unwrap();
-                match event {
-                    WindowEvent::Resized(_) => {
-                        renderer.resize();
-                    }
-                    WindowEvent::ScaleFactorChanged { .. } => {
-                        renderer.resize();
-                    }
-                    WindowEvent::CloseRequested => {
-                        *control_flow = ControlFlow::Exit;
-                    }
-                    WindowEvent::KeyboardInput {
-                        input: winit::event::KeyboardInput {
-                            virtual_keycode: Some(keycode),
-                            state,
-                            ..
-                        },
-                        ..
-                    } => {
-                        if window_id == cube_window_id {
-                            camera.process_key(keycode, state == ElementState::Pressed);
-                        }
-                    }
-                    _ => (),
-                }
-            },
-            Event::MainEventsCleared => {
-                for (_, renderer) in vulkano_windows.iter_mut() {
-                    renderer.window().request_redraw();
-                }
-            },
-            Event::RedrawRequested(window_id) => {
-                let frame_time = last_frame_time.elapsed().as_secs_f32();
-                last_frame_time = Instant::now();
-                attempt_gui_redraw(&mut gui[0], &mut vulkano_windows, window_id);
+        let frame_time = last_frame_time.elapsed().as_secs_f32();
+        if frame_time > 1.0 / 60.0 {
+            last_frame_time = Instant::now();
 
-                if window_id == cube_window_id {
-                    let renderer = vulkano_windows.get_renderer_mut(cube_window_id).unwrap();
-                    if gui[0].checkboxes[0].1 {
-                        cube_rotation += frame_time * gui[0].f32_sliders[0].1;
-                    }
-                    let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), &uniform_allocator, &camera);
-                    let before_future = renderer.acquire().unwrap();
-                    let after_future = cube_render_pipeline.draw_from_vertices(before_future, renderer.swapchain_image_view(), &vertex_buffer, &None, &index_buffer, &uniforms);
-                    renderer.present(after_future, true);
+            attempt_gui_redraw(&mut gui[0], &mut vulkano_windows, gui_window_id);
 
-                    last_frame_time = Instant::now();
-                }
-                camera.do_move(frame_time);
+            if gui[0].checkboxes[0].1 {
+                cube_rotation += frame_time * gui[0].f32_sliders[0].1;
             }
-            _ => (),
+
+            draw_cube(vulkano_windows.get_renderer_mut(cube_window_id).unwrap(), cube_rotation, &vertex_buffer, &index_buffer, &mut cube_render_pipeline, &camera, &uniform_allocator);
+
+
+            camera.do_move(frame_time);
         }
-    });
-    
+
+    }
+
+}
+
+fn draw_cube(
+    renderer: &mut VulkanoWindowRenderer,
+    cube_rotation: f32,
+    vertex_buffer: &Subbuffer<[ColouredVertex]>,
+    index_buffer: &Subbuffer<[u32]>,
+    pipeline: &mut MultiSamplePipeline3D, 
+    camera: &Camera,
+    uniform_allocator: &SubbufferAllocator,
+) {
+    let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), uniform_allocator, camera);
+    let before_future = renderer.acquire().unwrap();
+    let after_future = pipeline.draw_from_vertices(before_future, renderer.swapchain_image_view(), vertex_buffer, &None, index_buffer, &uniforms);
+    renderer.present(after_future, true);
 }
 
 

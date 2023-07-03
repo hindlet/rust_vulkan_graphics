@@ -1,6 +1,6 @@
 use vulkano::{buffer::{BufferContents, Subbuffer, Buffer, BufferCreateInfo, BufferUsage}, memory::allocator::{AllocationCreateInfo, MemoryUsage}};
 use vulkano_util::{context::VulkanoContext, window::VulkanoWindows};
-use winit::{event::{Event, WindowEvent, ElementState}, event_loop::ControlFlow};
+use winit::{event::{Event, WindowEvent, ElementState}, event_loop::{ControlFlow, EventLoop}, window::WindowId, platform::run_return::EventLoopExtRunReturn};
 
 use crate::{attempt_update_gui_window, GuiWindowData, Camera};
 
@@ -41,47 +41,88 @@ where
 }
 
 pub fn generic_winit_event_handling(
-    event: Event<'_, ()>,
+    event_loop: &mut EventLoop<()>,
     windows: &mut VulkanoWindows,
     gui: &mut Vec<GuiWindowData>,
-    control_flow: &mut ControlFlow,
-    camera: &mut Camera,
-) {
-    match event {
-        Event::WindowEvent { event, window_id } => {
-            // Update Egui integration so the UI works!
-            for window in gui.iter_mut() {
-                attempt_update_gui_window(window, &event, window_id);
-            }
-            let renderer = windows.get_renderer_mut(window_id).unwrap();
-            match event {
-                WindowEvent::Resized(_) => {
-                    renderer.resize();
+) -> bool {
+    let mut running = true;
+
+    event_loop.run_return(|event, _, control_flow| {
+        *control_flow = ControlFlow::Poll;
+        match &event {
+            Event::WindowEvent { event, window_id } => {
+                // Update Egui integration so the UI works!
+                for window in gui.iter_mut() {
+                    attempt_update_gui_window(window, &event, window_id.clone());
                 }
-                WindowEvent::ScaleFactorChanged { .. } => {
-                    renderer.resize();
+                let renderer = windows.get_renderer_mut(window_id.clone()).unwrap();
+                match event {
+                    WindowEvent::Resized(_) => {
+                        renderer.resize();
+                    }
+                    WindowEvent::ScaleFactorChanged { .. } => {
+                        renderer.resize();
+                    }
+                    WindowEvent::CloseRequested => {
+                        running = false;
+                    }
+                    _ => (),
                 }
-                WindowEvent::CloseRequested => {
-                    *control_flow = ControlFlow::Exit;
+            },
+            Event::MainEventsCleared => *control_flow = ControlFlow::Exit,
+            _ => ()
+        }
+    });
+
+    running
+}
+
+pub fn generic_winit_event_handling_with_camera(
+    event_loop: &mut EventLoop<()>,
+    windows: &mut VulkanoWindows,
+    gui: &mut Vec<GuiWindowData>,
+    camera: (&mut Camera, &WindowId),
+) -> bool {
+    let mut running = true;
+
+    event_loop.run_return(|event, _, control_flow| {
+        *control_flow = ControlFlow::Poll;
+        match &event {
+            Event::WindowEvent { event, window_id } => {
+                // Update Egui integration so the UI works!
+                for window in gui.iter_mut() {
+                    attempt_update_gui_window(window, &event, window_id.clone());
                 }
-                WindowEvent::KeyboardInput {
-                    input: winit::event::KeyboardInput {
-                        virtual_keycode: Some(keycode),
-                        state,
+                let renderer = windows.get_renderer_mut(window_id.clone()).unwrap();
+                match event {
+                    WindowEvent::Resized(_) => {
+                        renderer.resize();
+                    }
+                    WindowEvent::ScaleFactorChanged { .. } => {
+                        renderer.resize();
+                    }
+                    WindowEvent::CloseRequested => {
+                        running = false;
+                    }
+                    WindowEvent::KeyboardInput {
+                        input: winit::event::KeyboardInput {
+                            virtual_keycode: Some(keycode),
+                            state,
+                            ..
+                        },
                         ..
-                    },
-                    ..
-                } => {
-                    camera.process_key(keycode, state == ElementState::Pressed);
+                    } => {
+                        if window_id == camera.1 {
+                            camera.0.process_key(*keycode, *state == ElementState::Pressed);
+                        }
+                    }
+                    _ => (),
                 }
-                _ => (),
-            }
-        },
-        Event::MainEventsCleared => {
-            for (_, renderer) in windows.iter_mut() {
-                renderer.window().request_redraw();
-            }
-        },
-        _ => ()
-    }
+            },
+            Event::MainEventsCleared => *control_flow = ControlFlow::Exit,
+            _ => ()
+        }
+    });
+
+    running
 }
