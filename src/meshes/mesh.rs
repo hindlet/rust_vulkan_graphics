@@ -72,7 +72,7 @@ impl Mesh {
         let normals = {
             let mut final_norms: Vec<Normal> = Vec::new();
             for normal in normals.iter_mut() {
-                // println!("{:?}, {:?}", normal, normal.normalised());
+                println!("{:?}, {:?}", normal, normal.normalised());
                 final_norms.push(normal.normalised().into());
                 
             }
