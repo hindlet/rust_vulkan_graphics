@@ -63,6 +63,8 @@ impl Mesh {
             };
             let normal = dir_one.cross(dir_two);
 
+            println!("{:?}, {:?}, {:?} => {:?}", self.vertices[i], self.vertices[i + 1], self.vertices[i + 2], normal);
+
             normals[self.indices[i + 0] as usize] += normal;
             normals[self.indices[i + 1] as usize] += normal;
             normals[self.indices[i + 2] as usize] += normal;
@@ -72,7 +74,7 @@ impl Mesh {
         let normals = {
             let mut final_norms: Vec<Normal> = Vec::new();
             for normal in normals.iter_mut() {
-                println!("{:?}, {:?}", normal, normal.normalised());
+                // println!("{:?}, {:?}", normal, normal.normalised());
                 final_norms.push(normal.normalised().into());
                 
             }
