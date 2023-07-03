@@ -121,7 +121,7 @@ fn draw_cube(
 ) {
     let uniforms = get_uniform_subbuffer(cube_rotation, renderer.swapchain_image_size(), uniform_allocator, camera);
     let before_future = renderer.acquire().unwrap();
-    let after_future = pipeline.draw_from_vertices(before_future, renderer.swapchain_image_view(), vertex_buffer, &None, index_buffer, &uniforms);
+    let after_future = pipeline.draw_from_vertices(before_future, renderer.swapchain_image_view(), vertex_buffer, index_buffer, &uniforms);
     renderer.present(after_future, true);
 }
 

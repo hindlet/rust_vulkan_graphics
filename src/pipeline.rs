@@ -128,7 +128,6 @@ impl MultiSamplePipeline3D {
         image: SwapchainImageView,
 
         vertex_buffer: &Subbuffer<[VertexType]>,
-        normal_buffer: &Option<Subbuffer<[Normal]>>,
         index_buffer: &Subbuffer<[u32]>,
         uniforms: &Subbuffer<UniformBufferType>
     ) -> Box<dyn GpuFuture> {
@@ -212,15 +211,7 @@ impl MultiSamplePipeline3D {
                 dimensions: [dimensions[0] as f32, dimensions[1] as f32],
                 depth_range: 0.0..1.0,
             }])
-            .bind_vertex_buffers(0, vertex_buffer.clone());
-            
-
-        if let Some(normal_buffer_unwrapped) = normal_buffer {
-            builder
-                .bind_vertex_buffers(1, normal_buffer_unwrapped.clone());
-        }
-
-        builder
+            .bind_vertex_buffers(0, vertex_buffer.clone())
             .bind_index_buffer(index_buffer.clone())
             .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap();
@@ -232,5 +223,108 @@ impl MultiSamplePipeline3D {
 
         after_future.boxed()
 
+    }
+
+    pub fn draw_from_vertices_and_normals<VertexType, UniformBufferType>(
+        &mut self,
+        before_future: Box<dyn GpuFuture>,
+        image: SwapchainImageView,
+
+        vertex_buffer: &Subbuffer<[VertexType]>,
+        normal_buffer: &Subbuffer<[Normal]>,
+        index_buffer: &Subbuffer<[u32]>,
+        uniforms: &Subbuffer<UniformBufferType>
+    ) -> Box<dyn GpuFuture>{
+
+        let mut builder = AutoCommandBufferBuilder::primary(
+            &self.command_buffer_allocator,
+            self.queue.queue_family_index(),
+            CommandBufferUsage::OneTimeSubmit,
+        )
+        .unwrap();
+
+        let dimensions = image.image().dimensions().width_height();
+        // Resize intermediary image
+        if dimensions != self.intermediary.dimensions().width_height() {
+            self.intermediary = ImageView::new_default(
+                AttachmentImage::transient_multisampled(
+                    &self.allocator,
+                    dimensions,
+                    SampleCount::Sample2,
+                    image.image().format(),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+        }
+        // Resize depth image
+        if dimensions != self.depth.dimensions().width_height() {
+            self.depth = ImageView::new_default(
+                AttachmentImage::transient_multisampled(
+                    &self.allocator,
+                    dimensions,
+                    SampleCount::Sample2,
+                    Format::D16_UNORM,
+                )
+                .unwrap(),
+            )
+            .unwrap();
+        }
+
+        let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
+        let set = PersistentDescriptorSet::new(
+            &self.descriptor_set_allocator,
+            layout.clone(),
+            [WriteDescriptorSet::buffer(0, uniforms.clone())],
+        )
+        .unwrap();
+
+        let framebuffer = Framebuffer::new(self.render_pass.clone(),
+            FramebufferCreateInfo {
+                attachments: vec![self.intermediary.clone(), self.depth.clone(), image],
+            ..Default::default()
+        })
+        .unwrap();
+
+        // Begin render pipeline commands
+        builder
+            .begin_render_pass(
+                RenderPassBeginInfo {
+                    clear_values: vec![
+                        Some([0.0, 0.0, 0.0, 1.0].into()),
+                        Some(1f32.into()),
+                        Some([0.0, 0.0, 0.0, 1.0].into()),
+                    ],
+                    ..RenderPassBeginInfo::framebuffer(framebuffer)
+                },
+                SubpassContents::Inline,
+            )
+            .unwrap();
+
+
+        builder
+            .bind_pipeline_graphics(self.pipeline.clone())
+            .bind_descriptor_sets(
+                PipelineBindPoint::Graphics,
+                self.pipeline.layout().clone(),
+                0,
+                set,
+            )
+            .set_viewport(0, vec![Viewport {
+                origin: [0.0, 0.0],
+                dimensions: [dimensions[0] as f32, dimensions[1] as f32],
+                depth_range: 0.0..1.0,
+            }])
+            .bind_vertex_buffers(0, vertex_buffer.clone(), normal_buffer.clone())
+            .bind_index_buffer(index_buffer.clone())
+            .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
+            .unwrap();
+
+
+        builder.end_render_pass().unwrap();
+        let command_buffer = builder.build().unwrap();
+        let after_future = before_future.then_execute(self.queue.clone(), command_buffer).unwrap();
+
+        after_future.boxed()
     }
 }
