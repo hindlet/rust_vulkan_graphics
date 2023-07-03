@@ -14,6 +14,7 @@ use vulkano::{
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet, allocator::StandardDescriptorSetAllocator}
     };
 use vulkano_util::{renderer::SwapchainImageView, context::VulkanoContext};
+use super::Normal;
 
 
 
@@ -127,6 +128,7 @@ impl MultiSamplePipeline3D {
         image: SwapchainImageView,
 
         vertex_buffer: &Subbuffer<[VertexType]>,
+        normal_buffer: &Option<Subbuffer<[Normal]>>,
         index_buffer: &Subbuffer<[u32]>,
         uniforms: &Subbuffer<UniformBufferType>
     ) -> Box<dyn GpuFuture> {
@@ -210,7 +212,15 @@ impl MultiSamplePipeline3D {
                 dimensions: [dimensions[0] as f32, dimensions[1] as f32],
                 depth_range: 0.0..1.0,
             }])
-            .bind_vertex_buffers(0, vertex_buffer.clone())
+            .bind_vertex_buffers(0, vertex_buffer.clone());
+            
+
+        if let Some(normal_buffer_unwrapped) = normal_buffer {
+            builder
+                .bind_vertex_buffers(1, normal_buffer_unwrapped.clone());
+        }
+
+        builder
             .bind_index_buffer(index_buffer.clone())
             .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap();
