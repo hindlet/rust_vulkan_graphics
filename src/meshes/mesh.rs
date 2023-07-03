@@ -63,7 +63,7 @@ impl Mesh {
             };
             let normal = dir_one.cross(dir_two);
 
-            println!("{:?}, {:?}, {:?} => {:?}", self.vertices[i], self.vertices[i + 1], self.vertices[i + 2], normal);
+            // println!("{:?}, {:?}, {:?} => {:?}", self.vertices[i], self.vertices[i + 1], self.vertices[i + 2], normal);
 
             normals[self.indices[i + 0] as usize] += normal;
             normals[self.indices[i + 1] as usize] += normal;
