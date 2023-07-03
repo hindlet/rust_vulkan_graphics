@@ -315,7 +315,7 @@ impl MultiSamplePipeline3D {
                 dimensions: [dimensions[0] as f32, dimensions[1] as f32],
                 depth_range: 0.0..1.0,
             }])
-            .bind_vertex_buffers(0, vertex_buffer.clone(), normal_buffer.clone())
+            .bind_vertex_buffers(0, (vertex_buffer.clone(), normal_buffer.clone()))
             .bind_index_buffer(index_buffer.clone())
             .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap();
