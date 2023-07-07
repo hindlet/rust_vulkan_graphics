@@ -128,15 +128,14 @@ impl Camera {
         // spin around up
         // normalise up
         self.up.normalise();
-        // outer product
         // rotate
         if self.movement[6] {
             let rotation = Matrix3::from_angle_and_axis(self.rotate_speed * time, self.up);
-            self.direction.mut_transform(rotation);
+            self.direction = rotation * self.direction;
         }
         if self.movement[7] {
             let rotation = Matrix3::from_angle_and_axis(-self.rotate_speed * time, self.up);
-            self.direction.mut_transform(rotation);
+            self.direction = rotation * self.direction;
         }
 
         // spin around left
@@ -145,11 +144,11 @@ impl Camera {
         // rotate
         if self.movement[8] {
             let rotation = Matrix3::from_angle_and_axis(self.rotate_speed * time, left);
-            self.direction.mut_transform(rotation);
+            self.direction = rotation * self.direction;
         }
         if self.movement[9] {
             let rotation = Matrix3::from_angle_and_axis(-self.rotate_speed * time, left);
-            self.direction.mut_transform(rotation);
+            self.direction = rotation * self.direction;
         }
     }
 }
