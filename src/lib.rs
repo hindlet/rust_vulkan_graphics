@@ -10,12 +10,13 @@ pub use camera_maths::Camera;
 pub use gui::*;
 pub use general_graphics::*;
 pub use pipeline::*;
-pub use vulkano_shaders::shader;
 pub use vulkano_wrapping::*;
 pub use vulkano::buffer::{allocator::*, Subbuffer};
 pub use meshes::*;
 pub use winit::{event::{Event, WindowEvent, ElementState, KeyboardInput, VirtualKeyCode}, event_loop::{ControlFlow, EventLoop}};
 pub use vulkano_util::{context::VulkanoContext, renderer::VulkanoWindowRenderer};
+#[macro_export]
+extern crate vulkano_shaders;
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};
