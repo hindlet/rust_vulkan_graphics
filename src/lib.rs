@@ -20,7 +20,7 @@ pub use vulkano_shaders::shader;
 pub use vulkano::pipeline::ComputePipeline;
 pub use general_compute::*;
 pub use vulkano::descriptor_set::{allocator::StandardDescriptorSetAllocator, WriteDescriptorSet};
-pub use vulkano::command_buffer::allocator::CommandBufferAllocator;
+pub use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};
