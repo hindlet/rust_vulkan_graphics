@@ -152,9 +152,9 @@ impl Mesh {
 
     pub fn get_buffers(&self, context: VulkanoContext) -> (Subbuffer<[PositionVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
         (
-            create_graphics_shader_data_buffer(self.vertices.clone(), &context, BufferType::Vertex),
-            create_graphics_shader_data_buffer(self.normals.clone(), &context, BufferType::Normal),
-            create_graphics_shader_data_buffer(self.indices.clone(), &context, BufferType::Index),
+            create_shader_data_buffer(self.vertices.clone(), &context, BufferType::Vertex),
+            create_shader_data_buffer(self.normals.clone(), &context, BufferType::Normal),
+            create_shader_data_buffer(self.indices.clone(), &context, BufferType::Index),
         )
     }
 }

@@ -7,10 +7,11 @@ use crate::{attempt_update_gui_window, GuiWindowData, Camera};
 pub enum BufferType {
     Vertex,
     Normal,
-    Index
+    Index,
+    Storage
 }
 
-pub fn create_graphics_shader_data_buffer<T, I>(
+pub fn create_shader_data_buffer<T, I>(
     data: I,
     context: &VulkanoContext,
     shader_type: BufferType
@@ -23,7 +24,8 @@ where
     let usage = match shader_type {
         BufferType::Vertex => {BufferUsage::VERTEX_BUFFER},
         BufferType::Normal => {BufferUsage::VERTEX_BUFFER},
-        BufferType::Index => {BufferUsage::INDEX_BUFFER}
+        BufferType::Index => {BufferUsage::INDEX_BUFFER},
+        BufferType::Storage => {BufferUsage::STORAGE_BUFFER}
     };
 
     Buffer::from_iter(

@@ -63,8 +63,8 @@ fn main() {
         &mut vulkano_windows, window_ids[1], &event_loop
     )];
 
-    let vertex_buffer = create_graphics_shader_data_buffer(test_cube::COLOURED_VERTICES, &vulkano_context, BufferType::Vertex);
-    let index_buffer = create_graphics_shader_data_buffer(test_cube::INDICES, &vulkano_context, BufferType::Index);
+    let vertex_buffer = create_shader_data_buffer(test_cube::COLOURED_VERTICES, &vulkano_context, BufferType::Vertex);
+    let index_buffer = create_shader_data_buffer(test_cube::INDICES, &vulkano_context, BufferType::Index);
 
     let mut camera = Camera::new(Some([-2.0, 0.0, 0.0]), None, Some(10.0), None);
     camera.controllable();
