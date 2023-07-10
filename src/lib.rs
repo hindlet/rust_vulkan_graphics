@@ -19,7 +19,8 @@ pub use vulkano_util::{context::VulkanoContext, renderer::VulkanoWindowRenderer}
 pub use vulkano_shaders::shader;
 pub use vulkano::pipeline::ComputePipeline;
 pub use general_compute::*;
-pub use vulkano::descriptor_set::WriteDescriptorSet;
+pub use vulkano::descriptor_set::{allocator::StandardDescriptorSetAllocator, WriteDescriptorSet};
+pub use vulkano::command_buffer::allocator::CommandBufferAllocator;
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};
