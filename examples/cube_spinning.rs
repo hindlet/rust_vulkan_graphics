@@ -1,4 +1,4 @@
-use std::{time::Instant};
+use std::time::Instant;
 use rust_vulkan_graphics::*;
 use maths::{Matrix3, Matrix4};
 
@@ -84,7 +84,8 @@ fn main() {
         &descriptor_set_allocator,
         &vs,
         &fs,
-        &vertex_defs::coloured()
+        &vertex_defs::coloured(),
+        None,
     );
 
     loop {

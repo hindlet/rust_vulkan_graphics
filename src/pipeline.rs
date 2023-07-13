@@ -39,16 +39,19 @@ impl MultiSamplePipeline3D {
         vertex_shader: &Arc<ShaderModule>,
         fragment_shader: &Arc<ShaderModule>,
         vertex_def: &[VertexBufferDescription],
+        sample_count: Option<SampleCount>,
     ) -> Self {
 
+        let samples = sample_count.unwrap_or(SampleCount::Sample2);
+
         let render_pass = Self::create_render_pass(context);
-        let pipeline = Self::create_pipeline(vertex_shader, fragment_shader, vertex_def, &render_pass, context);
+        let pipeline = Self::create_pipeline(vertex_shader, fragment_shader, vertex_def, &render_pass, context, samples);
 
         let intermediary_image = ImageView::new_default(
-            AttachmentImage::transient_multisampled(context.memory_allocator(), [1, 1], SampleCount::Sample2, Format::B8G8R8A8_SRGB).unwrap()
+            AttachmentImage::transient_multisampled(context.memory_allocator(), [1, 1], samples, Format::B8G8R8A8_SRGB).unwrap()
         ).unwrap();
         let depth = ImageView::new_default(
-            AttachmentImage::transient_multisampled(context.memory_allocator(), [1, 1], SampleCount::Sample2, Format::D16_UNORM).unwrap()
+            AttachmentImage::transient_multisampled(context.memory_allocator(), [1, 1], samples, Format::D16_UNORM).unwrap()
         ).unwrap();
         
         Self {
@@ -103,6 +106,7 @@ impl MultiSamplePipeline3D {
         vertex_def: &[VertexBufferDescription],
         render_pass: &Arc<RenderPass>,
         context: &VulkanoContext,
+        sample_count: SampleCount
     ) -> Arc<GraphicsPipeline> {
 
         let subpass = Subpass::from(render_pass.clone(), 0).unwrap();
@@ -114,7 +118,7 @@ impl MultiSamplePipeline3D {
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
             .render_pass(subpass.clone())
             .multisample_state(MultisampleState {
-                rasterization_samples: SampleCount::Sample2,
+                rasterization_samples: sample_count,
                 ..Default::default()
             })
             .depth_stencil_state(DepthStencilState::simple_depth_test())
