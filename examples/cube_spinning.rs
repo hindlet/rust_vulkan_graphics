@@ -67,7 +67,6 @@ fn main() {
     let index_buffer = create_shader_data_buffer(test_cube::INDICES, &vulkano_context, BufferType::Index);
 
     let mut camera = Camera::new(Some([-2.0, 0.0, 0.0]), None, Some(10.0), None);
-    camera.controllable();
 
     let mut last_frame_time = Instant::now();
     let mut cube_rotation = 0.0;
@@ -85,7 +84,7 @@ fn main() {
         &vs,
         &fs,
         &vertex_defs::coloured(),
-        None,
+        Some(SampleCount::Sample4),
     );
 
     loop {

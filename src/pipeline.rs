@@ -29,6 +29,7 @@ pub struct MultiSamplePipeline3D {
 
     intermediary: Arc<ImageView<AttachmentImage>>,
     depth: Arc<ImageView<AttachmentImage>>,
+    sample_count: SampleCount,
 }
 
 impl MultiSamplePipeline3D {
@@ -44,7 +45,7 @@ impl MultiSamplePipeline3D {
 
         let samples = sample_count.unwrap_or(SampleCount::Sample2);
 
-        let render_pass = Self::create_render_pass(context);
+        let render_pass = Self::create_render_pass(context, samples);
         let pipeline = Self::create_pipeline(vertex_shader, fragment_shader, vertex_def, &render_pass, context, samples);
 
         let intermediary_image = ImageView::new_default(
@@ -63,11 +64,13 @@ impl MultiSamplePipeline3D {
             descriptor_set_allocator: descriptor_set_allocator.clone(),
             intermediary: intermediary_image,
             depth: depth,
+            sample_count: samples
         }
     }
 
     fn create_render_pass(
         context: &VulkanoContext,
+        sample_num: SampleCount,
     ) -> Arc<RenderPass> {
         single_pass_renderpass!(
             context.device().clone(),
@@ -76,13 +79,13 @@ impl MultiSamplePipeline3D {
                     load: Clear,
                     store: DontCare,
                     format: Format::B8G8R8A8_SRGB,
-                    samples: 2,
+                    samples: sample_num,
                 },
                 depth: {
                     load: Clear,
                     store: DontCare,
                     format: Format::D16_UNORM,
-                    samples: 2,
+                    samples: sample_num,
                 },
                 end: {
                     load: DontCare,
@@ -150,7 +153,7 @@ impl MultiSamplePipeline3D {
                 AttachmentImage::transient_multisampled(
                     &self.allocator,
                     dimensions,
-                    SampleCount::Sample2,
+                    self.sample_count,
                     image.image().format(),
                 )
                 .unwrap(),
@@ -163,7 +166,7 @@ impl MultiSamplePipeline3D {
                 AttachmentImage::transient_multisampled(
                     &self.allocator,
                     dimensions,
-                    SampleCount::Sample2,
+                    self.sample_count,
                     Format::D16_UNORM,
                 )
                 .unwrap(),
