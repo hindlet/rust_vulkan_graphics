@@ -33,6 +33,11 @@ pub struct MultiSamplePipeline3D {
 }
 
 impl MultiSamplePipeline3D {
+    /// creates a new multisample pipeline for the given shaders
+    /// 
+    /// Important Params:
+    /// - Vertex Def - defines how vertices are sent to the gpu, can be taken from the vertex defs module
+    /// - Sample Count - How many samples the pipeline will take, defaults to 2
     pub fn new(
         context: &VulkanoContext,
         command_buffer_allocator: &Arc<StandardCommandBufferAllocator>,
