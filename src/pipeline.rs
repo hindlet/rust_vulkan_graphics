@@ -262,7 +262,7 @@ impl MultiSamplePipeline3D {
                 AttachmentImage::transient_multisampled(
                     &self.allocator,
                     dimensions,
-                    SampleCount::Sample2,
+                    self.sample_count,
                     image.image().format(),
                 )
                 .unwrap(),
@@ -275,7 +275,7 @@ impl MultiSamplePipeline3D {
                 AttachmentImage::transient_multisampled(
                     &self.allocator,
                     dimensions,
-                    SampleCount::Sample2,
+                    self.sample_count,
                     Format::D16_UNORM,
                 )
                 .unwrap(),
