@@ -5,6 +5,7 @@ use vulkano::buffer::Subbuffer;
 use vulkano_util::context::VulkanoContext;
 use super::*;
 use maths::Vector3;
+use std::collections::BTreeMap;
 
 
 
@@ -85,39 +86,58 @@ impl Mesh {
         self
     }
 
-    /// returns a flat shaded version of the mesh called on
+    /// returns a flat shaded version of the smooth shaded mesh called on
     pub fn flat_shaded(&self) -> Mesh {
         let mut new_verts: Vec<PositionVertex> = Vec::new();
-        let mut new_normals: Vec<Normal> = Vec::new();
     
         for i in (0..self.indices.len()).step_by(3) {
-            let v_one: Vector3 = self.vertices[self.indices[i as usize + 0] as usize].position.into();
-            let v_two: Vector3 = self.vertices[self.indices[i as usize + 1] as usize].position.into();
-            let v_thr: Vector3 = self.vertices[self.indices[i as usize + 2] as usize].position.into();
-    
-            let normal = (v_one - v_thr).cross(v_two - v_thr).normalised();
-    
-            new_verts.push(PositionVertex::from(v_one));
-            new_verts.push(PositionVertex::from(v_two));
-            new_verts.push(PositionVertex::from(v_thr));
-            new_normals.push(Normal::from(normal));
-            new_normals.push(Normal::from(normal));
-            new_normals.push(Normal::from(normal));
+            new_verts.push(self.vertices[self.indices[i as usize + 0] as usize]);
+            new_verts.push(self.vertices[self.indices[i as usize + 1] as usize]);
+            new_verts.push(self.vertices[self.indices[i as usize + 2] as usize]);
         }
     
         let indices = (0..(new_verts.len()) as u32).collect_vec();
-        Mesh::new(new_verts, indices).set_normals(new_normals).clone()
+        let mut new_mesh = Mesh::new(new_verts, indices);
+        new_mesh.recalculate_normals();
+        new_mesh
     }
 
     /// sets the current mesh to be flat shaded
-    /// 
-    /// NOT CURRENTLY REVERSIBLE
     pub fn flat_shade(&mut self) {
         let new = self.flat_shaded();
         self.vertices = new.vertices;
         self.normals = new.normals;
         self.indices = new.indices;
     }
+
+
+    /// returns a smooth shaded version of the flat shaded mesh called on
+    pub fn smooth_shaded(&self) -> Mesh {
+        let mut map: BTreeMap<Vector3, u32> = BTreeMap::new();
+        let mut new_indices = Vec::new();
+
+        for i in 0..self.vertices.len() {
+            map.insert(self.vertices[i].position.into(), i as u32);
+        }
+
+        for index in self.indices.iter() {
+            new_indices.push(map.get(&self.vertices[*index as usize].position.into()).unwrap().clone())
+        }
+
+        let mut out = Mesh::new(self.vertices.clone(), new_indices);
+        out.recalculate_normals();
+
+        out
+    }
+
+     /// sets the current mesh to be smooth shaded
+     pub fn smooth_shade(&mut self) {
+        let new = self.smooth_shaded();
+        self.vertices = new.vertices;
+        self.normals = new.normals;
+        self.indices = new.indices;
+    }
+
 
     /// flat shades the components of a Mesh without ever needing a Mesh
     /// 
