@@ -6,18 +6,20 @@ use rust_vulkan_graphics::*;
 fn main() {
 
     let (mut event_loop, _vulkano_contex, mut vulkano_windows, window_ids, _, _) = get_general_graphics_data(vec![("".to_string(), 300.0, 500.0, false)]);
-    let mut gui = vec![create_gui_window(
-        "Example Gui".to_string(),
-        vec![("Do nothing".to_string(), false), ("Do something (lie)".to_string(), false)],
-        vec![("Random Slider".to_string(), 0.5, 0.0..=1.0)],
-        vec![("Random int Slider".to_string(), 5, 0..=15)],
-        Vec::new(),
-        Vec::new(),
-        vec![("Unsigned int setting".to_string(), 5)],
-        vec![("Name Field".to_string(), "Mr Testing".to_string())],
+    let mut gui = vec![
+        create_gui_window(
+            "Example Gui".to_string(),
+            vec![("Do nothing".to_string(), false), ("Do something (lie)".to_string(), false)],
+            vec![("Random Slider".to_string(), 0.5, 0.0..=1.0)],
+            vec![("Random int Slider".to_string(), 5, 0..=15)],
+            Vec::new(),
+            Vec::new(),
+            vec![("Unsigned int setting".to_string(), 5)],
+            vec![("Name Field".to_string(), "Mr Testing".to_string())],
 
-        &mut vulkano_windows, window_ids[0], &event_loop
-    )];
+            &mut vulkano_windows, window_ids[0], &event_loop
+        )
+    ];
 
     let mut last_frame_time = Instant::now();
 
