@@ -16,13 +16,19 @@ pub use vulkano::buffer::{allocator::*, Subbuffer};
 pub use meshes::*;
 pub use winit::{event::{Event, WindowEvent, ElementState, KeyboardInput, VirtualKeyCode}, event_loop::{ControlFlow, EventLoop}};
 pub use vulkano_util::{context::VulkanoContext, renderer::VulkanoWindowRenderer};
-pub use vulkano_shaders::shader;
 pub use vulkano::pipeline::ComputePipeline;
 pub use general_compute::*;
 pub use vulkano::descriptor_set::{allocator::StandardDescriptorSetAllocator, WriteDescriptorSet};
 pub use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;
 pub use vulkano::image::SampleCount;
+pub use macros::shader;
+
+use vulkano;
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};
+}
+
+pub mod all_vulkano{
+    pub use super::vulkano::*;
 }

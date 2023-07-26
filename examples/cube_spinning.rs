@@ -3,7 +3,7 @@ use rust_vulkan_graphics::*;
 use maths::{Matrix3, Matrix4};
 
 mod vs {
-    vulkano_shaders::shader!{
+    rust_vulkan_graphics::shader!{
         ty: "vertex",
         src: r"
             #version 450
@@ -28,7 +28,7 @@ mod vs {
 }
 
 mod fs {
-    vulkano_shaders::shader!{
+    rust_vulkan_graphics::shader!{
         ty: "fragment",
         src: r"
             #version 460

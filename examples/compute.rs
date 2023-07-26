@@ -26,7 +26,7 @@ fn main() {
 }
 
 mod cs {
-    vulkano_shaders::shader!{
+    rust_vulkan_graphics::shader!{
         ty: "compute",
         src: r"
             #version 460
