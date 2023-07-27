@@ -21,7 +21,7 @@ pub use general_compute::*;
 pub use vulkano::descriptor_set::{allocator::StandardDescriptorSetAllocator, WriteDescriptorSet};
 pub use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;
 pub use vulkano::image::SampleCount;
-pub use macros::shader;
+pub use vulkano_shaders::shader;
 
 use vulkano;
 

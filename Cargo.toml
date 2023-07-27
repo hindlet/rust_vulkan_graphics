@@ -15,4 +15,4 @@ vulkano-win = "0.33"
 bytemuck = "1.13.1"
 egui = "0.21.0"
 egui_winit_vulkano = "0.24.0"
-macros = {path = "proc_macros", package = "proc_macros", version = "*"}
+vulkano-shaders = "0.33.0"
