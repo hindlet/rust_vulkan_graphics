@@ -177,4 +177,19 @@ impl Mesh {
             create_shader_data_buffer(self.indices.clone(), &context, BufferType::Index),
         )
     }
+
+    // combines two meshes, recalculates normals if there is an incorrect number of normals compared to vertices
+    pub fn add(&mut self, mut other: Mesh) {
+        let vert_offset = self.vertices.len();
+        self.vertices.append(&mut other.vertices);
+        self.normals.append(&mut other.normals);
+        for index in other.indices.iter_mut() {
+            *index += vert_offset as u32;
+        }
+        self.indices.append(&mut other.indices);
+
+        if self.vertices.len() != self.normals.len() {
+            self.recalculate_normals();
+        }
+    }
 }
