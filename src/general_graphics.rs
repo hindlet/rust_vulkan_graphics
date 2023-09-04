@@ -27,7 +27,7 @@ use vulkano::{
 pub struct ColouredVertex {
     #[format(R32G32B32_SFLOAT)]
     pub position: [f32; 3],
-    #[format(R32G32B32_SFLOAT)]
+    #[format(R32G32B32A32_SFLOAT)]
     pub colour: [f32; 4],
 }
 
