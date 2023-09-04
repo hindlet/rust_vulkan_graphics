@@ -2,14 +2,14 @@ use super::{ColouredVertex, PositionVertex, Normal};
 
 
 pub const COLOURED_VERTICES: [ColouredVertex; 8] = [
-    ColouredVertex {position: [-0.5, -0.5, -0.5], colour: [0.84, 0.01, 0.44]},
-    ColouredVertex {position: [0.5, -0.5, -0.5], colour: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [-0.5, -0.5, 0.5], colour: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [0.5, -0.5, 0.5], colour: [0.0, 0.22, 0.66]},
-    ColouredVertex {position: [-0.5, 0.5, -0.5], colour: [0.84, 0.01, 0.44]},
-    ColouredVertex {position: [0.5, 0.5, -0.5], colour: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [-0.5, 0.5, 0.5], colour: [0.61, 0.31, 0.59]},
-    ColouredVertex {position: [0.5, 0.5, 0.5], colour: [0.0, 0.22, 0.66]}
+    ColouredVertex {position: [-0.5, -0.5, -0.5], colour: [0.84, 0.01, 0.44, 1.0]},
+    ColouredVertex {position: [0.5, -0.5, -0.5], colour: [0.61, 0.31, 0.59, 1.0]},
+    ColouredVertex {position: [-0.5, -0.5, 0.5], colour: [0.61, 0.31, 0.59, 1.0]},
+    ColouredVertex {position: [0.5, -0.5, 0.5], colour: [0.0, 0.22, 0.66, 1.0]},
+    ColouredVertex {position: [-0.5, 0.5, -0.5], colour: [0.84, 0.01, 0.44, 1.0]},
+    ColouredVertex {position: [0.5, 0.5, -0.5], colour: [0.61, 0.31, 0.59, 1.0]},
+    ColouredVertex {position: [-0.5, 0.5, 0.5], colour: [0.61, 0.31, 0.59, 1.0]},
+    ColouredVertex {position: [0.5, 0.5, 0.5], colour: [0.0, 0.22, 0.66, 1.0]}
 ];
 
 pub const UNCOLOURED_VERTICES: [PositionVertex; 8] = [

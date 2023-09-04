@@ -89,11 +89,24 @@ impl ColouredMesh {
     }
 
 
-    pub fn components(&self) -> (Vec<PositionVertex>, Vec<Normal>, Vec<u32>){
-        self.mesh.components()
+    pub fn components(&self) -> (Vec<ColouredVertex>, Vec<Normal>, Vec<u32>){
+        let (vertices, normals, indices) = self.mesh.components();
+        let mut out_vertices = Vec::new();
+        for vertex in vertices {
+            out_vertices.push(ColouredVertex {
+                position: vertex.position,
+                colour: self.colour
+            });
+        }
+        (out_vertices, normals, indices)
     }
 
-    pub fn get_buffers(&self, context: &VulkanoContext) -> (Subbuffer<[PositionVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
-        self.mesh.get_buffers(context)
+    pub fn get_buffers(&self, context: &VulkanoContext) -> (Subbuffer<[ColouredVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
+        let (vertices, normals, indices) = self.components();
+        (
+            create_shader_data_buffer(vertices, &context, BufferType::Vertex),
+            create_shader_data_buffer(normals, &context, BufferType::Normal),
+            create_shader_data_buffer(indices, &context, BufferType::Index),
+        )
     }
 }

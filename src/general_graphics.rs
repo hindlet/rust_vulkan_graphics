@@ -28,7 +28,7 @@ pub struct ColouredVertex {
     #[format(R32G32B32_SFLOAT)]
     pub position: [f32; 3],
     #[format(R32G32B32_SFLOAT)]
-    pub colour: [f32; 3],
+    pub colour: [f32; 4],
 }
 
 #[repr(C)]
