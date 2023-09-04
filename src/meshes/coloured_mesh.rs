@@ -93,7 +93,7 @@ impl ColouredMesh {
         self.mesh.components()
     }
 
-    pub fn get_buffers(&self, context: VulkanoContext) -> (Subbuffer<[PositionVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
+    pub fn get_buffers(&self, context: &VulkanoContext) -> (Subbuffer<[PositionVertex]>, Subbuffer<[Normal]>, Subbuffer<[u32]>) {
         self.mesh.get_buffers(context)
     }
 }
