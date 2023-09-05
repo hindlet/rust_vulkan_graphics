@@ -60,7 +60,7 @@ impl<T: Position + Clone + Copy + BufferContents> Mesh<T> {
                 let dir: Vector3 = self.vertices[self.indices[i + 1] as usize].pos().into();
                 dir - self.vertices[self.indices[i + 2] as usize].pos().into()
             };
-            let normal = dir_one.cross(dir_two);
+            let normal = dir_two.cross(dir_one);
 
             // println!("{:?}, {:?}, {:?} => {:?}", self.vertices[i], self.vertices[i + 1], self.vertices[i + 2], normal);
 
