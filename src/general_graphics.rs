@@ -9,8 +9,8 @@ use super::Camera;
 use maths::{Vector3, Matrix4, Matrix3};
 use vulkano::{
     pipeline::graphics::vertex_input::Vertex,
-    command_buffer::allocator::{StandardCommandBufferAllocator},
-    descriptor_set::allocator::{StandardDescriptorSetAllocator},
+    command_buffer::allocator::StandardCommandBufferAllocator,
+    descriptor_set::allocator::StandardDescriptorSetAllocator,
     memory::allocator::StandardMemoryAllocator,
     buffer::{allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo}, BufferUsage},
     format::Format,
@@ -18,7 +18,9 @@ use vulkano::{
 };
 
 
-
+pub trait Position {
+    fn pos(&self) -> [f32; 3];
+}
 
 
 // define Vertex and Normal Structs
@@ -31,11 +33,23 @@ pub struct ColouredVertex {
     pub colour: [f32; 4],
 }
 
+impl Position for ColouredVertex {
+    fn pos(&self) -> [f32; 3] {
+        self.position
+    }
+}
+
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Zeroable, Pod, Vertex)]
 pub struct PositionVertex {
     #[format(R32G32B32_SFLOAT)]
     pub position: [f32; 3],
+}
+
+impl Position for PositionVertex {
+    fn pos(&self) -> [f32; 3] {
+        self.position
+    }
 }
 
 
