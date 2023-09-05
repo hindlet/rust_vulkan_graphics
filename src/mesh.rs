@@ -84,6 +84,14 @@ impl<T: Position + Clone + Copy + BufferContents> Mesh<T> {
         self
     }
 
+    pub fn invert_normals(&mut self) {
+        for mut normal in self.normals.iter_mut() {
+            normal.normal[0] *= -1.0;
+            normal.normal[1] *= -1.0;
+            normal.normal[2] *= -1.0;
+        }
+    }
+
     /// returns a flat shaded version of the smooth shaded mesh called on
     pub fn flat_shaded(&self) -> Mesh<T> {
         let mut new_verts: Vec<T> = Vec::new();
