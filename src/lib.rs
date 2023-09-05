@@ -24,6 +24,7 @@ pub use vulkano::image::SampleCount;
 pub use vulkano_shaders::shader;
 
 use vulkano;
+use vulkano_util;
 
 pub mod vertex_types{
     pub use super::general_graphics::{ColouredVertex, PositionVertex, Normal};
@@ -31,4 +32,8 @@ pub mod vertex_types{
 
 pub mod all_vulkano{
     pub use super::vulkano::*;
+}
+
+pub mod all_vulkano_utils{
+    pub use super::vulkano_util::*;
 }
