@@ -13,8 +13,7 @@ use vulkano::{
     descriptor_set::allocator::StandardDescriptorSetAllocator,
     memory::allocator::StandardMemoryAllocator,
     buffer::{allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo}, BufferUsage},
-    format::Format,
-    image::ImageUsage,
+    swapchain::SwapchainCreateInfo,
 };
 
 
@@ -97,9 +96,17 @@ pub mod vertex_defs {
     }
 }
 
+#[macro_export]
+macro_rules! gen_swapchain_func {
+    ($x: expr) => {
+        |ci| {ci.image_format = Some($x); ci.image_usage = vulkano::image::ImageUsage::TRANSFER_DST | ci.image_usage}
+    };
+}
+
 
 pub fn get_general_graphics_data(
-    window_data: Vec<(String, f32, f32, bool)>
+    window_data: Vec<(String, f32, f32, bool)>,
+    format_func: fn(&mut SwapchainCreateInfo)
 ) ->(EventLoop<()>, VulkanoContext, VulkanoWindows, Vec<WindowId>, Arc<StandardCommandBufferAllocator>, Arc<StandardDescriptorSetAllocator>) {
     let event_loop = EventLoop::new();
 
@@ -126,7 +133,7 @@ pub fn get_general_graphics_data(
                     resizable: datum.3,
                     ..Default::default()
                 },
-                |ci| {ci.image_format = Some(Format::B8G8R8A8_SRGB); ci.image_usage = ImageUsage::TRANSFER_DST | ci.image_usage},
+                format_func
             )
         )
     }

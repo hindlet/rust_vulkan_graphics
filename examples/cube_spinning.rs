@@ -9,9 +9,9 @@ mod vs {
             #version 450
 
             layout(location = 0) in vec3 position;
-            layout(location = 1) in vec3 colour;
+            layout(location = 1) in vec4 colour;
 
-            layout(location = 0) out vec3 v_colour;
+            layout(location = 0) out vec4 v_colour;
             
             layout(set = 0, binding = 0) uniform Data {
                 mat4 world;
@@ -33,12 +33,12 @@ mod fs {
         src: r"
             #version 460
 
-            layout(location = 0) in vec3 v_colour;
+            layout(location = 0) in vec4 v_colour;
 
             layout(location = 0) out vec4 f_color;
 
             void main() {
-                f_color = vec4(v_colour, 1.0);
+                f_color = v_colour;
             }
         ",
 
@@ -48,7 +48,7 @@ mod fs {
 
 fn main() {
 
-    let (mut event_loop, vulkano_context, mut vulkano_windows, window_ids, commands_allocator, descriptor_set_allocator) = get_general_graphics_data(vec![("Cube".to_string(), 750.0, 500.0, false), ("".to_string(), 300.0, 500.0, false)]);
+    let (mut event_loop, vulkano_context, mut vulkano_windows, window_ids, commands_allocator, descriptor_set_allocator) = get_general_graphics_data(vec![("Cube".to_string(), 750.0, 500.0, false), ("".to_string(), 300.0, 500.0, false)], gen_swapchain_func!(Format::B8G8R8A8_SRGB));
     let uniform_allocator = create_uniform_buffer_allocator(vulkano_context.memory_allocator());
     let mut gui = vec![create_gui_window(
         "Cube Spinning Settings".to_string(),

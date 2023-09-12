@@ -17,6 +17,7 @@ pub use mesh::*;
 pub use winit::{event::{Event, WindowEvent, ElementState, KeyboardInput, VirtualKeyCode}, event_loop::{ControlFlow, EventLoop}};
 pub use vulkano_util::{context::VulkanoContext, renderer::VulkanoWindowRenderer};
 pub use vulkano::pipeline::ComputePipeline;
+pub use vulkano::format::Format;
 pub use general_compute::*;
 pub use vulkano::descriptor_set::{allocator::StandardDescriptorSetAllocator, WriteDescriptorSet};
 pub use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;

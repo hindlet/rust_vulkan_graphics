@@ -5,7 +5,7 @@ use rust_vulkan_graphics::*;
 
 fn main() {
 
-    let (mut event_loop, _vulkano_contex, mut vulkano_windows, window_ids, _, _) = get_general_graphics_data(vec![("".to_string(), 300.0, 500.0, false)]);
+    let (mut event_loop, _vulkano_contex, mut vulkano_windows, window_ids, _, _) = get_general_graphics_data(vec![("".to_string(), 300.0, 500.0, false)], gen_swapchain_func!(Format::B8G8R8A8_SRGB));
     let mut gui = vec![
         create_gui_window(
             "Example Gui".to_string(),
