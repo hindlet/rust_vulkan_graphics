@@ -99,7 +99,7 @@ pub mod vertex_defs {
 #[macro_export]
 macro_rules! gen_swapchain_func {
     ($x: expr) => {
-        |ci| {ci.image_format = Some($x); ci.image_usage = vulkano::image::ImageUsage::TRANSFER_DST | ci.image_usage}
+        |ci| {ci.image_format = Some($x); ci.image_usage = vulkano::image::ImageUsage::TRANSFER_DST | vulkano::image::ImageUsage::TRANSFER_SRC | ci.image_usage}
     };
 }
 
