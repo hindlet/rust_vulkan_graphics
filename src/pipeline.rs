@@ -134,6 +134,7 @@ impl MultiSamplePipeline3D {
             .unwrap()
     }
 
+    /// draws a single mesh with no normals
     pub fn draw_from_vertices<VertexType, UniformBufferType>(
         &mut self,
         before_future: Box<dyn GpuFuture>,
@@ -237,6 +238,7 @@ impl MultiSamplePipeline3D {
 
     }
 
+    /// draws a single mesh with normals
     pub fn draw_from_vertices_and_normals<VertexType, UniformBufferType>(
         &mut self,
         before_future: Box<dyn GpuFuture>,
@@ -339,4 +341,5 @@ impl MultiSamplePipeline3D {
 
         after_future.boxed()
     }
+    
 }
