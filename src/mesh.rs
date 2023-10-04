@@ -5,7 +5,8 @@ use vulkano::buffer::{Subbuffer, BufferContents};
 use vulkano_util::context::VulkanoContext;
 use super::*;
 use maths::Vector3;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, io::{BufReader, BufRead}, fs::File};
+
 
 
 /// Data for a mesh in 3D space
@@ -173,8 +174,124 @@ impl<T: Position + Clone + Copy + BufferContents> Mesh<T> {
     }
 }
 
-/// flat shades the components of a Mesh without ever needing a Mesh
-/// 
+
+// loads an obj file, currently only reads vertices, not materials
+pub fn load_obj(path: &str) -> Vec<Mesh<PositionVertex>> {
+
+    if !path.ends_with(".obj") {
+        panic!("Cannot read files that are not obj");
+    }
+
+    let file = File::open(path).expect(&format!("Could not find file, \"{}\"", path));
+    let buf = BufReader::new(file);
+
+    let mut result: Vec<Mesh<PositionVertex>> = Vec::new();
+
+    let mut temp_vertices: Vec<PositionVertex> = Vec::new();
+    let mut temp_normals: Vec<Normal> = Vec::new();
+    let mut vertex_indices: Vec<usize> = Vec::new();
+    let mut normal_indices: Vec<usize> = Vec::new();
+    let mut vertex_index_offset = 0;
+    let mut normal_index_offset = 0;
+    let mut flat_shaded: bool = true;
+
+    for line in buf.lines() {
+        if line.is_err() {break;}
+        let line = line.unwrap();
+
+        if line.starts_with("# ") {continue;}
+
+        else if line.starts_with("o ") {
+            if vertex_indices.len() != normal_indices.len() || vertex_indices.len() % 3 != 0 {
+                panic!("Size Error");
+            }
+            if temp_vertices.len() == 0 {continue;}
+            let mut vertices = Vec::new();
+            let mut normals = Vec::new();
+            for i in (0..vertex_indices.len()).step_by(3) {
+                vertices.push(temp_vertices[vertex_indices[i + 0]]);
+                vertices.push(temp_vertices[vertex_indices[i + 1]]);
+                vertices.push(temp_vertices[vertex_indices[i + 2]]);
+
+                normals.push(temp_normals[normal_indices[i + 0]]);
+                normals.push(temp_normals[normal_indices[i + 1]]);
+                normals.push(temp_normals[normal_indices[i + 2]]);
+            }
+            let indices: Vec<u32> = (0..vertices.len() as u32).collect();
+            let mut mesh = Mesh::new(vertices, indices);
+            mesh.set_normals(normals);
+            if !flat_shaded { 
+                result.push(mesh.smooth_shaded());
+            } else {
+                result.push(mesh);
+            }
+
+            vertex_index_offset += temp_vertices.len();
+            normal_index_offset += temp_normals.len();
+            temp_vertices = Vec::new();
+            temp_normals = Vec::new();
+            vertex_indices = Vec::new();
+            normal_indices = Vec::new();
+        }
+
+        else if line.starts_with("v ") {
+            let split: Vec<&str> = line.split(" ").collect();
+            temp_vertices.push(PositionVertex {position: [split[1].parse::<f32>().unwrap(), split[2].parse::<f32>().unwrap(), split[3].parse::<f32>().unwrap()]});
+        }
+
+        else if line.starts_with("vn ") {
+            let split: Vec<&str> = line.split(" ").collect();
+            let normal = Vector3::new(split[1].parse::<f32>().unwrap(), split[2].parse::<f32>().unwrap(), split[3].parse::<f32>().unwrap());
+            temp_normals.push(Normal {normal: normal.normalised().into()});
+        }
+
+        else if line.starts_with("f ") {
+            let split: Vec<&str> = line.split(" ").collect();
+            for i in 1..=3 {
+                let subsplit: Vec<&str> = split[i].split("/").collect();
+                vertex_indices.push(subsplit[0].parse::<usize>().unwrap() - 1 - vertex_index_offset);
+                normal_indices.push(subsplit[2].parse::<usize>().unwrap() - 1 - normal_index_offset);
+            }
+        }
+
+        else if line.starts_with("s ") {
+            let split: Vec<&str> = line.split(" ").collect();
+            flat_shaded = split[1] == "off";
+        }
+    }
+
+    let mut vertices = Vec::new();
+    let mut normals = Vec::new();
+    // println!("{:?}", temp_vertices);
+    // println!("{:?}", vertex_indices);
+    // println!("{:?}", temp_normals);
+    // println!("{:?}", normal_indices);
+    // println!("{:?}", vertex_indices.len() / 3);
+    for i in (0..vertex_indices.len()).step_by(3) {
+        vertices.push(temp_vertices[vertex_indices[i + 0]]);
+        vertices.push(temp_vertices[vertex_indices[i + 1]]);
+        vertices.push(temp_vertices[vertex_indices[i + 2]]);
+
+        normals.push(temp_normals[normal_indices[i + 2]]);
+        normals.push(temp_normals[normal_indices[i + 0]]);
+        normals.push(temp_normals[normal_indices[i + 1]]);
+    }
+    let indices: Vec<u32> = (0..vertices.len() as u32).collect();
+    let mut mesh = Mesh::new(vertices, indices);
+    mesh.set_normals(normals);
+    if !flat_shaded {
+        result.push(mesh.smooth_shaded());
+    } else {
+        result.push(mesh);
+    }
+
+    // println!("{:?}", result[0]);
+
+    result
+}
+
+
+/// flat shades the components of a Mesh without ever needing a Mesh, 
 /// functionally equivalent to calling flat_shaded() and then into()
 pub fn flat_shade_components(in_verts: Vec<PositionVertex>, in_inds: Vec<u32>) -> (Vec<PositionVertex>, Vec<Normal>, Vec<u32>){
     let mut new_verts: Vec<PositionVertex> = Vec::new();
@@ -197,4 +314,12 @@ pub fn flat_shade_components(in_verts: Vec<PositionVertex>, in_inds: Vec<u32>) -
 
     let indices = (0..(new_verts.len()) as u32).collect_vec();
     (new_verts, new_normals, indices)
+}
+
+pub fn combine_meshes<T: Position + Clone + Copy + BufferContents>(meshes: &Vec<Mesh<T>>) -> Mesh<T> {
+    let mut total_mesh = meshes[0].clone();
+    for i in 1..meshes.len() {
+        total_mesh.add(meshes[i].clone());
+    };
+    total_mesh
 }
